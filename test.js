@@ -22,7 +22,8 @@ const target = {
 }
 
 global.document = {
-  querySelector: () => target
+  querySelector: () => target,
+  querySelectorAll: () => [target]
 }
 global.CustomEvent = class CustomEvent {
   constructor (type, opts = {}) {
