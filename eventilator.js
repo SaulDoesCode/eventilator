@@ -3,56 +3,77 @@
     ? fn(...args)
     : curry.bind(undefined, fn, arity, ...args)
 
-  const eventilator = curry((once, target, type, handle, options = false) => {
-    if (typeof target === 'string') target = root.document.querySelector(target)
-    if (type === Object(type)) {
+  const listen = (once, target, type, fn, options = false) => {
+    if (typeof target === 'string') {
+      target = root.document.querySelectorAll(target)
+      target = target.length === 1 ? target[0] : Array.from(target)
+    }
+  
+    if (Array.isArray(target) ? !target.length : !target.addEventListener) {
+      throw new Error('nil/empty event target(s)')
+    }
+  
+    let typeobj = type != null && type.constructor === Object
+    if (type == null || !(typeobj || typeof type === 'string')) {
+      throw new TypeError('cannot listen to nil or invalid event type')
+    }
+
+    if (Array.isArray(target)) {
+      for (let i = 0; i < target.length; i++) {
+        target[i] = listen(
+          once, target[i], typeobj ? Object.assign({}, type) : type, fn, options
+        )
+      }
+      return target
+    }
+  
+    if (typeobj) {
       for (const name in type) {
-        type[name] = eventilator(once, target, name, type[name], options)
+        type[name] = listen(once, target, name, type[name], options)
+      }
+      target.off = () => {
+        for (const h of target) h()
+        return target
+      }
+      target.on = mode => {
+        for (const h of target) h.on(mode)
+        return target
       }
       return type
     }
-    if (typeof handle !== 'function') {
-      return eventilator.bind(undefined, once, target, type)
+  
+    function wrapper () {
+      fn.call(this, ...arguments, target)
+      if (off.once) off()
     }
-    let isOn = false
-    handle = handle.bind(target)
-
-    const handler = evt => {
-      handle(evt, target)
-      once && remove()
+  
+    const on = mode => {
+      if (mode != null && mode !== off.once) off.once = !!mode
+      target.addEventListener(type, wrapper, options)
+      off.ison = true
+      return off
     }
+  
+    const off = Object.assign(() => {
+      target.removeEventListener(type, wrapper)
+      off.ison = false
+      return off
+    }, {
+      target,
+      on,
+      once,
+      emit: eventilator.emit.bind(target, target)
+    })
+    off.off = off
+  
+    return on()
+  }
 
-    const remove = () => {
-      target.removeEventListener(type, handler)
-      isOn = false
-      return manager
-    }
-
-    const add = mode => {
-      if (isOn) remove()
-      once = !!mode
-      target.addEventListener(type, handler, options)
-      isOn = true
-      return manager
-    }
-
-    const manager = {
-      get isOn () { return isOn },
-      on: add,
-      off: remove,
-      once: add.bind(undefined, true),
-      emit (type, detail) {
-        target.dispatchEvent(new root.CustomEvent(type, {detail}))
-        return manager
-      }
-    }
-
-    return add(once)
-  }, 3)
+  const eventilator = curry(listen, 3)
 
   eventilator.curry = curry
-  eventilator.once = eventilator(true)
-  eventilator.on = eventilator(false)
+  eventilator.once = listen.bind(null, true)
+  eventilator.on = listen.bind(null, false)
   eventilator.emit = (target, type, detail) => {
     target.dispatchEvent(new root.CustomEvent(type, {detail}))
   }
@@ -67,7 +88,7 @@
 
   typeof module !== 'undefined'
     ? module.exports = eventilator
-    : typeof define === 'function' && root.define.amd
+    : root.define instanceof Function && root.define.amd
       ? root.define(['eventilator'], () => eventilator)
       : root.eventilator = eventilator
 })(typeof global !== 'undefined' ? global : window)
