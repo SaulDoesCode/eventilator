@@ -1,6 +1,6 @@
 {
   "name": "eventilator",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "cute event manager with super powers",
   "main": "eventilator.js",
   "author": "SaulDoesCode <saulvdw@gmail.com>",
