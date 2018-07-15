@@ -1,6 +1,6 @@
 {
   "name": "eventilator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "cute event manager with super powers",
   "main": "eventilator.js",
   "author": "SaulDoesCode <saulvdw@gmail.com>",
@@ -9,11 +9,28 @@
     "build": "./node_modules/.bin/minify eventilator.js --outFile ./eventilator.min.js && ./node_modules/.bin/babel ./eventilator.min.js -o ./eventilator.es5.js && ./node_modules/.bin/minify ./eventilator.es5.js --outFile ./eventilator.min.es5.js && rm ./eventilator.es5.js",
     "test": "yarn build && ./node_modules/.bin/ava test.js"
   },
+  "keywords": [
+    "event",
+    "event-handling",
+    "event-handler",
+    "event-listener",
+    "event-listening",
+    "event-binding",
+    "event-emitter",
+    "emitter",
+    "events",
+    "emit",
+    "listener",
+    "dom",
+    "dom-events",
+    "frontend",
+    "es6",
+    "es5"
+  ],
   "devDependencies": {
-    "@babel/cli": "^7.0.0-beta.47",
-    "@babel/core": "^7.0.0-beta.47",
-    "@babel/preset-env": "^7.0.0-beta.47",
-    "ava": "^0.25.0",
-    "babel-minify": "^0.4.3"
+    "@babel/cli": "^7.0.0-beta.53",
+    "@babel/preset-env": "^7.0.0-beta.53",
+    "ava": "^1.0.0-beta.6",
+    "babel-minify": "^0.5.0-alpha.a24dd066"
   }
 }
